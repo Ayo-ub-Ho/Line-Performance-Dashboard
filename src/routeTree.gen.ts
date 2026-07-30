@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HourlyEntryRouteImport } from './routes/hourly-entry'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HourlyEntryRoute = HourlyEntryRouteImport.update({
+  id: '/hourly-entry',
+  path: '/hourly-entry',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hourly-entry': typeof HourlyEntryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hourly-entry': typeof HourlyEntryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/hourly-entry': typeof HourlyEntryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/hourly-entry'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/hourly-entry'
+  id: '__root__' | '/' | '/hourly-entry'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HourlyEntryRoute: typeof HourlyEntryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hourly-entry': {
+      id: '/hourly-entry'
+      path: '/hourly-entry'
+      fullPath: '/hourly-entry'
+      preLoaderRoute: typeof HourlyEntryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HourlyEntryRoute: HourlyEntryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
