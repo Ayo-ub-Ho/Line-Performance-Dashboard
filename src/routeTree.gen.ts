@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HourlyEntryRouteImport } from './routes/hourly-entry'
+import { Route as ParametersRouteImport } from './routes/parameters'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const HourlyEntryRoute = HourlyEntryRouteImport.update({
   path: '/hourly-entry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParametersRoute = ParametersRouteImport.update({
+  id: '/parameters',
+  path: '/parameters',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/hourly-entry': typeof HourlyEntryRoute
+  '/parameters': typeof ParametersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/hourly-entry': typeof HourlyEntryRoute
+  '/parameters': typeof ParametersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/hourly-entry': typeof HourlyEntryRoute
+  '/parameters': typeof ParametersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/hourly-entry'
+  fullPaths: '/' | '/hourly-entry' | '/parameters'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/hourly-entry'
-  id: '__root__' | '/' | '/hourly-entry'
+  to: '/' | '/hourly-entry' | '/parameters'
+  id: '__root__' | '/' | '/hourly-entry' | '/parameters'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HourlyEntryRoute: typeof HourlyEntryRoute
+  ParametersRoute: typeof ParametersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HourlyEntryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parameters': {
+      id: '/parameters'
+      path: '/parameters'
+      fullPath: '/parameters'
+      preLoaderRoute: typeof ParametersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HourlyEntryRoute: HourlyEntryRoute,
+  ParametersRoute: ParametersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
