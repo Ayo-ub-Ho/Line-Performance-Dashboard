@@ -63,7 +63,13 @@
   --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-rank-1: var(--rank-1);
+  --color-rank-2: var(--rank-2);
+  --color-rank-3: var(--rank-3);
+  --color-rank-4: var(--rank-4);
+  --color-rank-5: var(--rank-5);
   --shadow-card: var(--shadow-card);
+
 }
 
 :root {
