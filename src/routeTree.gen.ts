@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HourlyEntryRouteImport } from './routes/hourly-entry'
+import { Route as ParametersRouteImport } from './routes/parameters'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HourlyEntryRoute = HourlyEntryRouteImport.update({
+  id: '/hourly-entry',
+  path: '/hourly-entry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParametersRoute = ParametersRouteImport.update({
+  id: '/parameters',
+  path: '/parameters',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hourly-entry': typeof HourlyEntryRoute
+  '/parameters': typeof ParametersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hourly-entry': typeof HourlyEntryRoute
+  '/parameters': typeof ParametersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/hourly-entry': typeof HourlyEntryRoute
+  '/parameters': typeof ParametersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/hourly-entry' | '/parameters'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/hourly-entry' | '/parameters'
+  id: '__root__' | '/' | '/hourly-entry' | '/parameters'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HourlyEntryRoute: typeof HourlyEntryRoute
+  ParametersRoute: typeof ParametersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +68,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hourly-entry': {
+      id: '/hourly-entry'
+      path: '/hourly-entry'
+      fullPath: '/hourly-entry'
+      preLoaderRoute: typeof HourlyEntryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parameters': {
+      id: '/parameters'
+      path: '/parameters'
+      fullPath: '/parameters'
+      preLoaderRoute: typeof ParametersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HourlyEntryRoute: HourlyEntryRoute,
+  ParametersRoute: ParametersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
