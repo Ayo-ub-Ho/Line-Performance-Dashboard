@@ -24,7 +24,7 @@ export const Route = createFileRoute("/parameters")({
       },
     ],
   }),
-  component: Parameters;
+  component: Parameters,
 });
 
 function ListTable({
