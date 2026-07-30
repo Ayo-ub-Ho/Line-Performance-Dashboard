@@ -11,13 +11,13 @@ import { clientFormats, farms, packingLines } from "@/lib/mock-data";
 export const Route = createFileRoute("/parameters")({
   head: () => ({
     meta: [
-      { title: "Parameters | Packing Station" },
+      { title: "Parameters | SF PRODUCE" },
       {
         name: "description",
         content:
           "Manage reference data for the packing station: clients, formats, kg per box, packing lines and farms.",
       },
-      { property: "og:title", content: "Parameters | Packing Station" },
+      { property: "og:title", content: "Parameters | SF PRODUCE" },
       {
         property: "og:description",
         content: "Manage clients, formats, kg per box, packing lines and farms.",

@@ -17,13 +17,13 @@ import { clients, farms, formats, hours, packingLines } from "@/lib/mock-data";
 export const Route = createFileRoute("/hourly-entry")({
   head: () => ({
     meta: [
-      { title: "Hourly Entry | Packing Station" },
+      { title: "Hourly Entry | SF PRODUCE" },
       {
         name: "description",
         content:
           "Record hourly packing data: line, farm, batch, client, format, boxes packed and operators on shift.",
       },
-      { property: "og:title", content: "Hourly Entry | Packing Station" },
+      { property: "og:title", content: "Hourly Entry | SF PRODUCE" },
       {
         property: "og:description",
         content: "Record hourly packing data per line, batch and client.",
