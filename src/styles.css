@@ -63,7 +63,13 @@
   --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-rank-1: var(--rank-1);
+  --color-rank-2: var(--rank-2);
+  --color-rank-3: var(--rank-3);
+  --color-rank-4: var(--rank-4);
+  --color-rank-5: var(--rank-5);
   --shadow-card: var(--shadow-card);
+
 }
 
 :root {
@@ -89,7 +95,13 @@
   --border: oklch(0.92 0.008 145);
   --input: oklch(0.92 0.008 145);
   --ring: oklch(0.58 0.16 149);
+  --rank-1: oklch(0.45 0.14 152);
+  --rank-2: oklch(0.72 0.18 145);
+  --rank-3: oklch(0.85 0.16 95);
+  --rank-4: oklch(0.72 0.17 55);
+  --rank-5: oklch(0.58 0.22 27);
   --chart-1: oklch(0.58 0.16 149);
+
   --chart-2: oklch(0.7 0.14 150);
   --chart-3: oklch(0.45 0.1 155);
   --chart-4: oklch(0.75 0.15 75);

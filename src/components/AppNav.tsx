@@ -16,8 +16,9 @@ export function AppNav() {
             <Leaf className="size-5" />
           </span>
           <span className="font-display text-lg font-semibold tracking-tight">
-            Packing Station
+            SF PRODUCE
           </span>
+
         </div>
         <nav className="flex flex-wrap items-center gap-2">
           {links.map((l) => (
