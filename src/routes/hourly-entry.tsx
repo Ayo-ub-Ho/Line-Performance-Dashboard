@@ -101,6 +101,16 @@ function HourlyEntry() {
               <Field label="Operators">
                 <Input type="number" className="h-12 rounded-xl text-base" placeholder="0" />
               </Field>
+              <Field label="Kg Produced">
+                <Input
+                  readOnly
+                  disabled
+                  value=""
+                  className="h-12 cursor-not-allowed rounded-xl bg-muted text-base"
+                  placeholder="Calculated automatically"
+                />
+              </Field>
+
 
               <div className="sm:col-span-2">
                 <Button type="submit" size="lg" className="h-14 w-full rounded-xl text-base font-semibold">

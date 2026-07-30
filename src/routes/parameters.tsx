@@ -6,7 +6,7 @@ import { AppNav } from "@/components/AppNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { clients, farms, formats, kgPerBox, packingLines } from "@/lib/mock-data";
+import { clientFormats, farms, packingLines } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/parameters")({
   head: () => ({
@@ -105,12 +105,10 @@ function Parameters() {
         </p>
 
         <div className="mt-8 grid gap-6 xl:grid-cols-2">
-          <ListTable title="Clients" columns={["Client"]} rows={clients.map((c) => [c])} />
-          <ListTable title="Formats" columns={["Format"]} rows={formats.map((f) => [f])} />
           <ListTable
-            title="Kg per Box"
-            columns={["Format", "Kg"]}
-            rows={kgPerBox.map((k) => [k.format, String(k.kg)])}
+            title="Clients, Formats & Kg per Box"
+            columns={["Client", "Format", "Kg per Box"]}
+            rows={clientFormats.map((k) => [k.client, k.format, String(k.kg)])}
           />
           <ListTable
             title="Packing Lines"
@@ -119,6 +117,7 @@ function Parameters() {
           />
           <ListTable title="Farms" columns={["Farm"]} rows={farms.map((f) => [f])} />
         </div>
+
       </main>
     </div>
   );
