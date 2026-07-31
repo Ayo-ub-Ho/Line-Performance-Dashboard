@@ -6,12 +6,15 @@ export type LineRow = {
 };
 
 export const lineRows: LineRow[] = [
-  { line: "L1", farm: "Domaine Sud", batch: "V-1042", performance: 128 },
-  { line: "L2", farm: "Ferme El Ward", batch: "V-1043", performance: 96 },
-  { line: "L3", farm: "Plaine Verte", batch: "V-1044", performance: 143 },
-  { line: "L4", farm: "Domaine Sud", batch: "V-1045", performance: 74 },
-  { line: "L5", farm: "Oasis Agri", batch: "V-1046", performance: 111 },
+  { line: "L1", farm: "HASSI", batch: "V-1042", performance: 128.4 },
+  { line: "L2", farm: "TADDART", batch: "V-1043", performance: 96.7 },
+  { line: "L3", farm: "INCHADEN", batch: "V-1044", performance: 143.2 },
+  { line: "L4", farm: "SIDI BIBI", batch: "V-1045", performance: 74.5 },
+  { line: "L5", farm: "BIOUGRA", batch: "V-1046", performance: 110.9 },
 ];
+
+export const productionDate = "30/07/2026";
+export const productionHour = "11:00";
 
 export const hours = [
   "06:00",
@@ -28,7 +31,7 @@ export const hours = [
 export const clients = ["KAUFLAND", "LIDL", "HF", "Nordic Veg"];
 export const formats = ["Standard", "Flowpack", "Bulk"];
 export const packingLines = ["L1", "L2", "L3", "L4", "L5"];
-export const farms = ["Domaine Sud", "Ferme El Ward", "Plaine Verte", "Oasis Agri"];
+export const farms = ["HASSI", "TADDART", "INCHADEN", "SIDI BIBI", "BIOUGRA"];
 
 export const clientFormats = [
   { client: "KAUFLAND", format: "Standard", kg: 6 },
