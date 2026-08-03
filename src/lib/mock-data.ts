@@ -33,12 +33,82 @@ export const formats = ["Standard", "Flowpack", "Bulk"];
 export const packingLines = ["L1", "L2", "L3", "L4", "L5"];
 export const farms = ["HASSI", "TADDART", "INCHADEN", "SIDI BIBI", "BIOUGRA"];
 
-export const clientFormats = [
-  { client: "KAUFLAND", format: "Standard", kg: 6 },
-  { client: "KAUFLAND", format: "Flowpack", kg: 5 },
-  { client: "LIDL", format: "Standard", kg: 7 },
-  { client: "HF", format: "Bulk", kg: 8 },
+/**
+ * Packaging modes. Adding a new mode only requires an entry here:
+ * `fields` declares which inputs are shown, `derivedKgPerBox` says whether
+ * Kg per Box is computed (read-only) or entered manually.
+ */
+export type PackagingModeId = "sachet" | "bulk";
+
+export type PackagingMode = {
+  id: PackagingModeId;
+  label: string;
+  fields: Array<"unitWeight" | "unitsPerBox">;
+  derivedKgPerBox: boolean;
+};
+
+export const packagingModes: PackagingMode[] = [
+  {
+    id: "sachet",
+    label: "Sachet",
+    fields: ["unitWeight", "unitsPerBox"],
+    derivedKgPerBox: true,
+  },
+  { id: "bulk", label: "Bulk", fields: [], derivedKgPerBox: false },
 ];
+
+export type PackagingConfig = {
+  id: string;
+  client: string;
+  name: string;
+  mode: PackagingModeId;
+  /** grams */
+  unitWeight: number | null;
+  unitsPerBox: number | null;
+  /** manual only for modes where derivedKgPerBox is false */
+  kgPerBox: number | null;
+};
+
+export const packagingConfigs: PackagingConfig[] = [
+  {
+    id: "cfg-1",
+    client: "KAUFLAND",
+    name: "Sachet 500g x 10",
+    mode: "sachet",
+    unitWeight: 500,
+    unitsPerBox: 10,
+    kgPerBox: null,
+  },
+  {
+    id: "cfg-2",
+    client: "LIDL",
+    name: "Sachet 1kg x 6",
+    mode: "sachet",
+    unitWeight: 1000,
+    unitsPerBox: 6,
+    kgPerBox: null,
+  },
+  {
+    id: "cfg-3",
+    client: "HF",
+    name: "Vrac 8kg",
+    mode: "bulk",
+    unitWeight: null,
+    unitsPerBox: null,
+    kgPerBox: 8,
+  },
+];
+
+/** Kg per Box resolution: derived for modes like Sachet, manual otherwise. */
+export function computeKgPerBox(cfg: PackagingConfig): number | null {
+  const mode = packagingModes.find((m) => m.id === cfg.mode);
+  if (mode?.derivedKgPerBox) {
+    if (cfg.unitWeight == null || cfg.unitsPerBox == null) return null;
+    return (cfg.unitWeight * cfg.unitsPerBox) / 1000;
+  }
+  return cfg.kgPerBox;
+}
+
 
 /** Rank-based bar colors: 1st dark green → 5th red. */
 export const rankColors = [
