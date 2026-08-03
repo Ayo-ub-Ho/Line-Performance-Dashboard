@@ -48,15 +48,24 @@ function ListTable({
   title,
   columns,
   rows,
+  value,
+  onChange,
 }: {
   title: string;
   columns: string[];
   rows: string[][];
+  value?: string[][];
+  onChange?: (next: string[][]) => void;
 }) {
-  const [data, setData] = useState(rows);
+  const [internal, setInternal] = useState(rows);
+  const data = value ?? internal;
+  const setData = (updater: (d: string[][]) => string[][]) => {
+    if (onChange) onChange(updater(data));
+    else setInternal(updater);
+  };
 
-  const update = (r: number, c: number, value: string) =>
-    setData((d) => d.map((row, i) => (i === r ? row.map((cell, j) => (j === c ? value : cell)) : row)));
+  const update = (r: number, c: number, v: string) =>
+    setData((d) => d.map((row, i) => (i === r ? row.map((cell, j) => (j === c ? v : cell)) : row)));
 
   return (
     <Card className="rounded-3xl border-border shadow-[var(--shadow-card)]">
@@ -110,6 +119,7 @@ function ListTable({
     </Card>
   );
 }
+
 
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
 const str = (v: number | null) => (v == null ? "" : String(v));
