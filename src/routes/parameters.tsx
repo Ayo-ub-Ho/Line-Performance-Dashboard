@@ -305,13 +305,17 @@ function ConfigCard({
 
 function Parameters() {
   const [configs, setConfigs] = useState<PackagingConfig[]>(packagingConfigs);
+  const [clientRows, setClientRows] = useState<string[][]>(initialClients.map((c) => [c]));
+  const clientOptions = clientRows
+    .map((r) => (r[0] ?? "").trim())
+    .filter((c) => c.length > 0);
 
   const addConfig = () =>
     setConfigs((c) => [
       ...c,
       {
         id: `cfg-${Date.now()}`,
-        client: initialClients[0] ?? "",
+        client: clientOptions[0] ?? "",
         name: "",
         mode: "sachet",
         unitWeight: null,
@@ -319,6 +323,7 @@ function Parameters() {
         kgPerBox: null,
       },
     ]);
+
 
   return (
     <div className="min-h-screen bg-background">
