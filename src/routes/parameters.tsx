@@ -220,11 +220,18 @@ function ConfigCard({
             </Label>
             <Input
               type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
               value={str(config.unitWeight)}
-              onChange={(e) => set({ unitWeight: numOrNull(e.target.value) })}
-              className="h-11 rounded-xl"
+              onChange={(e) => set({ unitWeight: intOrNull(e.target.value) })}
+              className="h-11 rounded-xl tabular-nums"
+              aria-invalid={!!errors.unitWeight}
               placeholder="500"
             />
+            {errors.unitWeight && (
+              <p className="text-xs font-medium text-destructive">{errors.unitWeight}</p>
+            )}
           </div>
         )}
 
@@ -235,36 +242,55 @@ function ConfigCard({
             </Label>
             <Input
               type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
               value={str(config.unitsPerBox)}
-              onChange={(e) => set({ unitsPerBox: numOrNull(e.target.value) })}
-              className="h-11 rounded-xl"
-              placeholder="10"
+              onChange={(e) => set({ unitsPerBox: intOrNull(e.target.value) })}
+              className="h-11 rounded-xl tabular-nums"
+              aria-invalid={!!errors.unitsPerBox}
+              placeholder="12"
             />
+            {errors.unitsPerBox && (
+              <p className="text-xs font-medium text-destructive">{errors.unitsPerBox}</p>
+            )}
           </div>
         )}
 
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Kg per Box {derived && <span className="normal-case">(auto)</span>}
+            Kg per Box
           </Label>
           <Input
             type="number"
+            min={0}
+            step={derived ? undefined : 0.01}
+            inputMode="decimal"
             readOnly={derived}
             disabled={derived}
-            value={derived ? str(kgPerBox) : str(config.kgPerBox)}
+            value={derived ? formatKg(kgPerBox) : str(config.kgPerBox)}
             onChange={(e) => set({ kgPerBox: numOrNull(e.target.value) })}
             className={
               derived
                 ? "h-11 cursor-not-allowed rounded-xl bg-muted font-semibold tabular-nums"
                 : "h-11 rounded-xl tabular-nums"
             }
+            aria-invalid={!derived && !!errors.kgPerBox}
             placeholder={derived ? "Calculated" : "8"}
           />
+          {derived ? (
+            <p className="text-xs text-muted-foreground">Automatically calculated</p>
+          ) : (
+            errors.kgPerBox && (
+              <p className="text-xs font-medium text-destructive">{errors.kgPerBox}</p>
+            )
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 
 function Parameters() {
   const [configs, setConfigs] = useState<PackagingConfig[]>(packagingConfigs);
