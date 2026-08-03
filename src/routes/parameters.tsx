@@ -166,15 +166,17 @@ function ConfigCard({
 
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Configuration Name
+            Configuration Name <span className="normal-case">(auto)</span>
           </Label>
           <Input
-            value={config.name}
-            onChange={(e) => set({ name: e.target.value })}
-            className="h-11 rounded-xl"
-            placeholder="Sachet 500g x 10"
+            readOnly
+            disabled
+            value={buildConfigName(config)}
+            className="h-11 cursor-not-allowed rounded-xl bg-muted font-semibold"
+            placeholder="Generated automatically"
           />
         </div>
+
 
         <div className="flex items-end justify-end">
           <Button
