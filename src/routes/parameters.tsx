@@ -126,6 +126,10 @@ function ListTable({
 
 
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
+const intOrNull = (v: string) => {
+  const n = numOrNull(v);
+  return n == null || Number.isNaN(n) ? null : Math.trunc(n);
+};
 const str = (v: number | null) => (v == null ? "" : String(v));
 
 function ConfigCard({
@@ -144,8 +148,11 @@ function ConfigCard({
   const showUnitsPerBox = mode?.fields.includes("unitsPerBox") ?? false;
   const derived = mode?.derivedKgPerBox ?? false;
   const kgPerBox = computeKgPerBox(config);
+  const errors = validateConfig(config);
 
-  const set = (patch: Partial<PackagingConfig>) => onChange({ ...config, ...patch });
+  const set = (patch: Partial<PackagingConfig>) =>
+    onChange({ ...config, ...patch, name: buildConfigName({ ...config, ...patch }) });
+
 
   return (
     <div className="rounded-2xl border border-border p-5">
