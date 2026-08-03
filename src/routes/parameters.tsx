@@ -346,7 +346,7 @@ function Parameters() {
               <ConfigCard
                 key={cfg.id}
                 config={cfg}
-                clientOptions={initialClients}
+                clientOptions={clientOptions}
                 onChange={(next) =>
                   setConfigs((all) => all.map((c) => (c.id === cfg.id ? next : c)))
                 }
@@ -357,7 +357,14 @@ function Parameters() {
         </Card>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-3">
-          <ListTable title="Clients" columns={["Client"]} rows={initialClients.map((c) => [c])} />
+          <ListTable
+            title="Clients"
+            columns={["Client"]}
+            rows={clientRows}
+            value={clientRows}
+            onChange={setClientRows}
+          />
+
           <ListTable
             title="Packing Lines"
             columns={["Line"]}
