@@ -15,15 +15,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  buildConfigName,
   clients as initialClients,
   computeKgPerBox,
   farms,
+  formatKg,
   packagingConfigs,
   packagingModes,
   packingLines,
+  validateConfig,
   type PackagingConfig,
   type PackagingModeId,
 } from "@/lib/mock-data";
+
 
 export const Route = createFileRoute("/parameters")({
   head: () => ({
