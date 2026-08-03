@@ -109,6 +109,39 @@ export function computeKgPerBox(cfg: PackagingConfig): number | null {
   return cfg.kgPerBox;
 }
 
+/** Up to 2 decimals, no trailing zeros: 6, 6.25, 7.5 */
+export function formatKg(value: number | null): string {
+  if (value == null || Number.isNaN(value)) return "";
+  return String(Math.round(value * 100) / 100);
+}
+
+/** Configuration name is always derived from the mode + numeric fields. */
+export function buildConfigName(cfg: PackagingConfig): string {
+  const mode = packagingModes.find((m) => m.id === cfg.mode);
+  if (mode?.derivedKgPerBox) {
+    if (!cfg.unitWeight || !cfg.unitsPerBox) return "";
+    return `${cfg.unitWeight}g × ${cfg.unitsPerBox}`;
+  }
+  const kg = computeKgPerBox(cfg);
+  if (!kg) return "";
+  return `${mode?.label ?? "Bulk"} ${formatKg(kg)}kg`;
+}
+
+/** Field-level validation messages, keyed by field name. */
+export function validateConfig(cfg: PackagingConfig): Record<string, string> {
+  const mode = packagingModes.find((m) => m.id === cfg.mode);
+  const errors: Record<string, string> = {};
+  if (!cfg.client) errors.client = "Client is required";
+  if (mode?.fields.includes("unitWeight") && !(Number(cfg.unitWeight) > 0))
+    errors.unitWeight = "Must be greater than 0";
+  if (mode?.fields.includes("unitsPerBox") && !(Number(cfg.unitsPerBox) > 0))
+    errors.unitsPerBox = "Must be greater than 0";
+  if (!mode?.derivedKgPerBox && !(Number(cfg.kgPerBox) > 0))
+    errors.kgPerBox = "Must be greater than 0";
+  return errors;
+}
+
+
 
 /** Rank-based bar colors: 1st dark green → 5th red. */
 export const rankColors = [

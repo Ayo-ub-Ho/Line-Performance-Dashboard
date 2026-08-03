@@ -15,15 +15,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  buildConfigName,
   clients as initialClients,
   computeKgPerBox,
   farms,
+  formatKg,
   packagingConfigs,
   packagingModes,
   packingLines,
+  validateConfig,
   type PackagingConfig,
   type PackagingModeId,
 } from "@/lib/mock-data";
+
 
 export const Route = createFileRoute("/parameters")({
   head: () => ({
@@ -48,15 +52,24 @@ function ListTable({
   title,
   columns,
   rows,
+  value,
+  onChange,
 }: {
   title: string;
   columns: string[];
   rows: string[][];
+  value?: string[][];
+  onChange?: (next: string[][]) => void;
 }) {
-  const [data, setData] = useState(rows);
+  const [internal, setInternal] = useState(rows);
+  const data = value ?? internal;
+  const setData = (updater: (d: string[][]) => string[][]) => {
+    if (onChange) onChange(updater(data));
+    else setInternal(updater);
+  };
 
-  const update = (r: number, c: number, value: string) =>
-    setData((d) => d.map((row, i) => (i === r ? row.map((cell, j) => (j === c ? value : cell)) : row)));
+  const update = (r: number, c: number, v: string) =>
+    setData((d) => d.map((row, i) => (i === r ? row.map((cell, j) => (j === c ? v : cell)) : row)));
 
   return (
     <Card className="rounded-3xl border-border shadow-[var(--shadow-card)]">
@@ -111,7 +124,12 @@ function ListTable({
   );
 }
 
+
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
+const intOrNull = (v: string) => {
+  const n = numOrNull(v);
+  return n == null || Number.isNaN(n) ? null : Math.trunc(n);
+};
 const str = (v: number | null) => (v == null ? "" : String(v));
 
 function ConfigCard({
@@ -130,8 +148,11 @@ function ConfigCard({
   const showUnitsPerBox = mode?.fields.includes("unitsPerBox") ?? false;
   const derived = mode?.derivedKgPerBox ?? false;
   const kgPerBox = computeKgPerBox(config);
+  const errors = validateConfig(config);
 
-  const set = (patch: Partial<PackagingConfig>) => onChange({ ...config, ...patch });
+  const set = (patch: Partial<PackagingConfig>) =>
+    onChange({ ...config, ...patch, name: buildConfigName({ ...config, ...patch }) });
+
 
   return (
     <div className="rounded-2xl border border-border p-5">
@@ -156,15 +177,17 @@ function ConfigCard({
 
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Configuration Name
+            Configuration Name <span className="normal-case">(auto)</span>
           </Label>
           <Input
-            value={config.name}
-            onChange={(e) => set({ name: e.target.value })}
-            className="h-11 rounded-xl"
-            placeholder="Sachet 500g x 10"
+            readOnly
+            disabled
+            value={buildConfigName(config)}
+            className="h-11 cursor-not-allowed rounded-xl bg-muted font-semibold"
+            placeholder="Generated automatically"
           />
         </div>
+
 
         <div className="flex items-end justify-end">
           <Button
@@ -208,11 +231,18 @@ function ConfigCard({
             </Label>
             <Input
               type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
               value={str(config.unitWeight)}
-              onChange={(e) => set({ unitWeight: numOrNull(e.target.value) })}
-              className="h-11 rounded-xl"
+              onChange={(e) => set({ unitWeight: intOrNull(e.target.value) })}
+              className="h-11 rounded-xl tabular-nums"
+              aria-invalid={!!errors.unitWeight}
               placeholder="500"
             />
+            {errors.unitWeight && (
+              <p className="text-xs font-medium text-destructive">{errors.unitWeight}</p>
+            )}
           </div>
         )}
 
@@ -223,46 +253,69 @@ function ConfigCard({
             </Label>
             <Input
               type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
               value={str(config.unitsPerBox)}
-              onChange={(e) => set({ unitsPerBox: numOrNull(e.target.value) })}
-              className="h-11 rounded-xl"
-              placeholder="10"
+              onChange={(e) => set({ unitsPerBox: intOrNull(e.target.value) })}
+              className="h-11 rounded-xl tabular-nums"
+              aria-invalid={!!errors.unitsPerBox}
+              placeholder="12"
             />
+            {errors.unitsPerBox && (
+              <p className="text-xs font-medium text-destructive">{errors.unitsPerBox}</p>
+            )}
           </div>
         )}
 
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Kg per Box {derived && <span className="normal-case">(auto)</span>}
+            Kg per Box
           </Label>
           <Input
             type="number"
+            min={0}
+            step={derived ? undefined : 0.01}
+            inputMode="decimal"
             readOnly={derived}
             disabled={derived}
-            value={derived ? str(kgPerBox) : str(config.kgPerBox)}
+            value={derived ? formatKg(kgPerBox) : str(config.kgPerBox)}
             onChange={(e) => set({ kgPerBox: numOrNull(e.target.value) })}
             className={
               derived
                 ? "h-11 cursor-not-allowed rounded-xl bg-muted font-semibold tabular-nums"
                 : "h-11 rounded-xl tabular-nums"
             }
+            aria-invalid={!derived && !!errors.kgPerBox}
             placeholder={derived ? "Calculated" : "8"}
           />
+          {derived ? (
+            <p className="text-xs text-muted-foreground">Automatically calculated</p>
+          ) : (
+            errors.kgPerBox && (
+              <p className="text-xs font-medium text-destructive">{errors.kgPerBox}</p>
+            )
+          )}
         </div>
       </div>
     </div>
   );
 }
 
+
 function Parameters() {
   const [configs, setConfigs] = useState<PackagingConfig[]>(packagingConfigs);
+  const [clientRows, setClientRows] = useState<string[][]>(initialClients.map((c) => [c]));
+  const clientOptions = clientRows
+    .map((r) => (r[0] ?? "").trim())
+    .filter((c) => c.length > 0);
 
   const addConfig = () =>
     setConfigs((c) => [
       ...c,
       {
         id: `cfg-${Date.now()}`,
-        client: initialClients[0] ?? "",
+        client: clientOptions[0] ?? "",
         name: "",
         mode: "sachet",
         unitWeight: null,
@@ -270,6 +323,7 @@ function Parameters() {
         kgPerBox: null,
       },
     ]);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -292,7 +346,7 @@ function Parameters() {
               <ConfigCard
                 key={cfg.id}
                 config={cfg}
-                clientOptions={initialClients}
+                clientOptions={clientOptions}
                 onChange={(next) =>
                   setConfigs((all) => all.map((c) => (c.id === cfg.id ? next : c)))
                 }
@@ -303,7 +357,14 @@ function Parameters() {
         </Card>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-3">
-          <ListTable title="Clients" columns={["Client"]} rows={initialClients.map((c) => [c])} />
+          <ListTable
+            title="Clients"
+            columns={["Client"]}
+            rows={clientRows}
+            value={clientRows}
+            onChange={setClientRows}
+          />
+
           <ListTable
             title="Packing Lines"
             columns={["Line"]}
