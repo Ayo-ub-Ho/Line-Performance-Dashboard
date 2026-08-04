@@ -136,24 +136,26 @@ function HourlyEntry() {
     setSubmitted(true);
     if (Object.keys(errors).length > 0 || kgProduced == null || performance == null)
       return;
-    setEntries((all) => [
-      {
-        id: `entry-${Date.now()}`,
-        hour,
-        line,
-        farm,
-        versement: versement.trim(),
-        client,
-        configId,
-        configName: config ? buildConfigName(config) : "",
-        boxes: boxesNum,
-        operators: operatorsNum,
-        kgProduced,
-        performance,
-      },
-      ...all,
-    ]);
+    const payload = {
+      hour,
+      line,
+      farm,
+      versement: versement.trim(),
+      client,
+      configId,
+      configName: config ? buildConfigName(config) : "",
+      boxes: boxesNum,
+      operators: operatorsNum,
+      kgProduced,
+      performance,
+    };
+    if (editing) {
+      updateRecord(editing.id, payload);
+    } else {
+      addRecord(payload);
+    }
     reset();
+    navigate({ to: "/production-records" });
   };
 
   return (
