@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { AppNav } from "@/components/AppNav";
@@ -23,8 +23,16 @@ import {
   packagingModes,
   packingLines,
 } from "@/lib/mock-data";
+import {
+  addRecord,
+  getRecord,
+  updateRecord,
+} from "@/lib/production-store";
 
 export const Route = createFileRoute("/hourly-entry")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: typeof search.edit === "string" ? search.edit : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Hourly Entry | SF PRODUCE" },
@@ -45,20 +53,8 @@ export const Route = createFileRoute("/hourly-entry")({
   component: HourlyEntry,
 });
 
-type Entry = {
-  id: string;
-  hour: string;
-  line: string;
-  farm: string;
-  versement: string;
-  client: string;
-  configId: string;
-  configName: string;
-  boxes: number;
-  operators: number;
-  kgProduced: number;
-  performance: number;
-};
+
+
 
 function Field({
   label,
@@ -81,16 +77,21 @@ function Field({
 }
 
 function HourlyEntry() {
-  const [hour, setHour] = useState("");
-  const [line, setLine] = useState("");
-  const [farm, setFarm] = useState("");
-  const [versement, setVersement] = useState("");
-  const [client, setClient] = useState("");
-  const [configId, setConfigId] = useState("");
-  const [boxes, setBoxes] = useState("");
-  const [operators, setOperators] = useState("");
+  const { edit } = Route.useSearch();
+  const navigate = useNavigate();
+  const editing = edit ? getRecord(edit) : undefined;
+
+  const [hour, setHour] = useState(editing?.hour ?? "");
+  const [line, setLine] = useState(editing?.line ?? "");
+  const [farm, setFarm] = useState(editing?.farm ?? "");
+  const [versement, setVersement] = useState(editing?.versement ?? "");
+  const [client, setClient] = useState(editing?.client ?? "");
+  const [configId, setConfigId] = useState(editing?.configId ?? "");
+  const [boxes, setBoxes] = useState(editing ? String(editing.boxes) : "");
+  const [operators, setOperators] = useState(
+    editing ? String(editing.operators) : "",
+  );
   const [submitted, setSubmitted] = useState(false);
-  const [entries, setEntries] = useState<Entry[]>([]);
 
   const clientConfigs = useMemo(
     () => packagingConfigs.filter((c) => c.client === client),
@@ -135,24 +136,26 @@ function HourlyEntry() {
     setSubmitted(true);
     if (Object.keys(errors).length > 0 || kgProduced == null || performance == null)
       return;
-    setEntries((all) => [
-      {
-        id: `entry-${Date.now()}`,
-        hour,
-        line,
-        farm,
-        versement: versement.trim(),
-        client,
-        configId,
-        configName: config ? buildConfigName(config) : "",
-        boxes: boxesNum,
-        operators: operatorsNum,
-        kgProduced,
-        performance,
-      },
-      ...all,
-    ]);
+    const payload = {
+      hour,
+      line,
+      farm,
+      versement: versement.trim(),
+      client,
+      configId,
+      configName: config ? buildConfigName(config) : "",
+      boxes: boxesNum,
+      operators: operatorsNum,
+      kgProduced,
+      performance,
+    };
+    if (editing) {
+      updateRecord(editing.id, payload);
+    } else {
+      addRecord(payload);
+    }
     reset();
+    navigate({ to: "/production-records" });
   };
 
   return (
@@ -322,39 +325,13 @@ function HourlyEntry() {
                   size="lg"
                   className="h-14 w-full rounded-xl text-base font-semibold"
                 >
-                  Save Production
+                  {editing ? "Update Production" : "Save Production"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
 
-        {entries.length > 0 && (
-          <Card className="mt-8 rounded-3xl border-border shadow-[var(--shadow-card)]">
-            <CardHeader>
-              <CardTitle className="text-2xl">Saved this session</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {entries.map((e) => (
-                <div
-                  key={e.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border px-5 py-4"
-                >
-                  <div className="font-semibold">
-                    {e.hour} · {e.line} · {e.farm} · {e.versement}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {e.client} · {e.configName} · {e.boxes} boxes · {e.operators} op.
-                  </div>
-                  <div className="font-bold tabular-nums">
-                    {Math.round(e.kgProduced * 100) / 100} kg ·{" "}
-                    {e.performance.toFixed(2)} kg/op.
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   );
