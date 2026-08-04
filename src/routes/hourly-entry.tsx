@@ -53,20 +53,8 @@ export const Route = createFileRoute("/hourly-entry")({
   component: HourlyEntry,
 });
 
-type Entry = {
-  id: string;
-  hour: string;
-  line: string;
-  farm: string;
-  versement: string;
-  client: string;
-  configId: string;
-  configName: string;
-  boxes: number;
-  operators: number;
-  kgProduced: number;
-  performance: number;
-};
+
+
 
 function Field({
   label,
