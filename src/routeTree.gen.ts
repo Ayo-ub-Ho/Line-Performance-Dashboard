@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HourlyEntryRouteImport } from './routes/hourly-entry'
 import { Route as ParametersRouteImport } from './routes/parameters'
+import { Route as ProductionRecordsRouteImport } from './routes/production-records'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const ParametersRoute = ParametersRouteImport.update({
   path: '/parameters',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductionRecordsRoute = ProductionRecordsRouteImport.update({
+  id: '/production-records',
+  path: '/production-records',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/hourly-entry': typeof HourlyEntryRoute
   '/parameters': typeof ParametersRoute
+  '/production-records': typeof ProductionRecordsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/hourly-entry': typeof HourlyEntryRoute
   '/parameters': typeof ParametersRoute
+  '/production-records': typeof ProductionRecordsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/hourly-entry': typeof HourlyEntryRoute
   '/parameters': typeof ParametersRoute
+  '/production-records': typeof ProductionRecordsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/hourly-entry' | '/parameters'
+  fullPaths: '/' | '/hourly-entry' | '/parameters' | '/production-records'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/hourly-entry' | '/parameters'
-  id: '__root__' | '/' | '/hourly-entry' | '/parameters'
+  to: '/' | '/hourly-entry' | '/parameters' | '/production-records'
+  id: '__root__' | '/' | '/hourly-entry' | '/parameters' | '/production-records'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HourlyEntryRoute: typeof HourlyEntryRoute
   ParametersRoute: typeof ParametersRoute
+  ProductionRecordsRoute: typeof ProductionRecordsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParametersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/production-records': {
+      id: '/production-records'
+      path: '/production-records'
+      fullPath: '/production-records'
+      preLoaderRoute: typeof ProductionRecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,17 +106,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HourlyEntryRoute: HourlyEntryRoute,
   ParametersRoute: ParametersRoute,
+  ProductionRecordsRoute: ProductionRecordsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

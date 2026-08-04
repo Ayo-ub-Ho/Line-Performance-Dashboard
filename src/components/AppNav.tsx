@@ -4,6 +4,7 @@ import { Leaf } from "lucide-react";
 const links = [
   { to: "/", label: "Dashboard" },
   { to: "/hourly-entry", label: "Hourly Entry" },
+  { to: "/production-records", label: "Production Records" },
   { to: "/parameters", label: "Parameters" },
 ] as const;
 
