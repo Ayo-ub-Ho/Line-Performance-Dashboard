@@ -325,39 +325,13 @@ function HourlyEntry() {
                   size="lg"
                   className="h-14 w-full rounded-xl text-base font-semibold"
                 >
-                  Save Production
+                  {editing ? "Update Production" : "Save Production"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
 
-        {entries.length > 0 && (
-          <Card className="mt-8 rounded-3xl border-border shadow-[var(--shadow-card)]">
-            <CardHeader>
-              <CardTitle className="text-2xl">Saved this session</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {entries.map((e) => (
-                <div
-                  key={e.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border px-5 py-4"
-                >
-                  <div className="font-semibold">
-                    {e.hour} · {e.line} · {e.farm} · {e.versement}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {e.client} · {e.configName} · {e.boxes} boxes · {e.operators} op.
-                  </div>
-                  <div className="font-bold tabular-nums">
-                    {Math.round(e.kgProduced * 100) / 100} kg ·{" "}
-                    {e.performance.toFixed(2)} kg/op.
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   );
