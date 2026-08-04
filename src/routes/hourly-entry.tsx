@@ -77,16 +77,21 @@ function Field({
 }
 
 function HourlyEntry() {
-  const [hour, setHour] = useState("");
-  const [line, setLine] = useState("");
-  const [farm, setFarm] = useState("");
-  const [versement, setVersement] = useState("");
-  const [client, setClient] = useState("");
-  const [configId, setConfigId] = useState("");
-  const [boxes, setBoxes] = useState("");
-  const [operators, setOperators] = useState("");
+  const { edit } = Route.useSearch();
+  const navigate = useNavigate();
+  const editing = edit ? getRecord(edit) : undefined;
+
+  const [hour, setHour] = useState(editing?.hour ?? "");
+  const [line, setLine] = useState(editing?.line ?? "");
+  const [farm, setFarm] = useState(editing?.farm ?? "");
+  const [versement, setVersement] = useState(editing?.versement ?? "");
+  const [client, setClient] = useState(editing?.client ?? "");
+  const [configId, setConfigId] = useState(editing?.configId ?? "");
+  const [boxes, setBoxes] = useState(editing ? String(editing.boxes) : "");
+  const [operators, setOperators] = useState(
+    editing ? String(editing.operators) : "",
+  );
   const [submitted, setSubmitted] = useState(false);
-  const [entries, setEntries] = useState<Entry[]>([]);
 
   const clientConfigs = useMemo(
     () => packagingConfigs.filter((c) => c.client === client),
