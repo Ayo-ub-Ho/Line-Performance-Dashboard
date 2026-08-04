@@ -23,8 +23,16 @@ import {
   packagingModes,
   packingLines,
 } from "@/lib/mock-data";
+import {
+  addRecord,
+  getRecord,
+  updateRecord,
+} from "@/lib/production-store";
 
 export const Route = createFileRoute("/hourly-entry")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: typeof search.edit === "string" ? search.edit : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Hourly Entry | SF PRODUCE" },
