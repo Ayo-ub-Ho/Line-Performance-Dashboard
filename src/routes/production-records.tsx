@@ -71,13 +71,20 @@ function ProductionRecords() {
     <div className="min-h-screen bg-background">
       <AppNav />
       <main className="mx-auto max-w-[1600px] px-6 py-10">
-        <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-          Production Records
-        </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          Every saved hourly production entry. This is the source of truth for the
-          dashboard.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+              Production Records
+            </h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Every saved hourly production entry. This is the source of truth for the
+              dashboard.
+            </p>
+          </div>
+          <Button asChild size="lg" className="rounded-xl">
+            <Link to="/hourly-entry">Go to Hourly Entry</Link>
+          </Button>
+        </div>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
           <SummaryCard label="Total Records" value={String(records.length)} />

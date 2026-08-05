@@ -48,10 +48,6 @@ function useNow() {
   return now;
 }
 
-function nextHour(hour: string) {
-  const [h, m] = hour.split(":");
-  return `${pad((Number(h) + 1) % 24)}:${m ?? "00"}`;
-}
 
 function TvDashboard() {
   const records = useProductionRecords();
@@ -91,7 +87,7 @@ function TvDashboard() {
             {now ? `${pad(now.getHours())}:${pad(now.getMinutes())}` : "--:--"}
           </p>
           <p className="mt-1 text-2xl font-bold text-primary lg:text-4xl">
-            {productionHour ? `${productionHour} → ${nextHour(productionHour)}` : "—"}
+            {productionHour ?? "—"}
           </p>
         </div>
       </header>
