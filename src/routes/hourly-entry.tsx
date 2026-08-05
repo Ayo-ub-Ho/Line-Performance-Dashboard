@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { Button } from "@/components/ui/button";
@@ -151,8 +152,10 @@ function HourlyEntry() {
     };
     if (editing) {
       updateRecord(editing.id, payload);
+      toast.success("Production updated successfully", { duration: 2000 });
     } else {
       addRecord(payload);
+      toast.success("Production saved successfully", { duration: 2000 });
     }
     reset();
     navigate({ to: "/production-records" });
