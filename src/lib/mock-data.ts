@@ -14,18 +14,18 @@ export const lineRows: LineRow[] = [
 ];
 
 export const productionDate = "30/07/2026";
-export const productionHour = "11:00";
+export const productionHour = "11:00 → 12:00";
 
 export const hours = [
-  "06:00",
-  "07:00",
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
+  "06:00 → 07:00",
+  "07:00 → 08:00",
+  "08:00 → 09:00",
+  "09:00 → 10:00",
+  "10:00 → 11:00",
+  "11:00 → 12:00",
+  "12:00 → 13:00",
+  "13:00 → 14:00",
+  "14:00 → 15:00",
 ];
 
 export const clients = ["KAUFLAND", "LIDL", "HF", "Nordic Veg"];
