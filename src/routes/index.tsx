@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Leaf } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -10,129 +12,166 @@ import {
   YAxis,
 } from "recharts";
 
-import { AppNav } from "@/components/AppNav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { lineRows, productionDate, productionHour, rankColors } from "@/lib/mock-data";
+import { rankColors } from "@/lib/mock-data";
+import { useProductionRecords } from "@/lib/production-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Line Performance Dashboard | SF PRODUCE" },
+      { title: "Line Performance TV Dashboard | SF PRODUCE" },
       {
         name: "description",
         content:
-          "Live TV dashboard showing packing line performance in kg per operator, farm and versement for lines L1 to L5.",
+          "Real-time TV display ranking packing lines L1 to L5 by performance in kg per operator, with farm and versement per line.",
       },
-      { property: "og:title", content: "Line Performance Dashboard | SF PRODUCE" },
+      { property: "og:title", content: "Line Performance TV Dashboard | SF PRODUCE" },
       {
         property: "og:description",
-        content: "Live packing line performance per operator, farm and versement.",
+        content: "Real-time packing line ranking in kg per operator for the packing station.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Dashboard,
+  component: TvDashboard,
 });
 
-const fmt = (n: number) => n.toFixed(1);
+const pad = (n: number) => String(n).padStart(2, "0");
 
-function Dashboard() {
-  const ranked = [...lineRows].sort((a, b) => b.performance - a.performance);
-  const rankOf = new Map(ranked.map((r, i) => [r.line, i]));
-  const colorOf = (line: string) => rankColors[rankOf.get(line) ?? 0] ?? rankColors[rankColors.length - 1];
+function useNow() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
+
+function nextHour(hour: string) {
+  const [h, m] = hour.split(":");
+  return `${pad((Number(h) + 1) % 24)}:${m ?? "00"}`;
+}
+
+function TvDashboard() {
+  const records = useProductionRecords();
+  const now = useNow();
+
+  // Records are stored newest-first: the first match per line is the latest one.
+  const latestByLine = new Map<string, (typeof records)[number]>();
+  for (const r of records) if (!latestByLine.has(r.line)) latestByLine.set(r.line, r);
+
+  const rows = [...latestByLine.values()].sort((a, b) => b.performance - a.performance);
+
+  const productionHour = rows[0]?.hour ?? records[0]?.hour ?? null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppNav />
-      <main className="mx-auto max-w-[1900px] px-6 py-10 lg:px-16 lg:py-14">
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-8 border-b border-border pb-8">
-          <h1 className="truncate text-4xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl">
-            Line Performance Dashboard
-          </h1>
-          <div className="shrink-0 text-right">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground lg:text-sm">
-              Production
+    <div className="dark flex min-h-screen flex-col bg-background text-foreground">
+      <header className="flex flex-wrap items-center justify-between gap-6 border-b border-border px-8 py-6 lg:px-14">
+        <div className="flex items-center gap-5">
+          <span className="flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+            <Leaf className="size-9" />
+          </span>
+          <div>
+            <p className="font-display text-2xl font-bold tracking-tight lg:text-3xl">
+              SF PRODUCE
             </p>
-            <p className="mt-1 text-xl font-bold tabular-nums lg:text-3xl">{productionDate}</p>
-            <p className="text-xl font-bold tabular-nums lg:text-3xl">{productionHour}</p>
+            <h1 className="font-display text-4xl font-extrabold uppercase tracking-tight lg:text-6xl">
+              Line Performance
+            </h1>
           </div>
-        </header>
+        </div>
+        <div className="text-right tabular-nums">
+          <p className="text-2xl font-semibold text-muted-foreground lg:text-3xl">
+            {now
+              ? `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`
+              : "--/--/----"}
+          </p>
+          <p className="text-4xl font-bold lg:text-6xl">
+            {now ? `${pad(now.getHours())}:${pad(now.getMinutes())}` : "--:--"}
+          </p>
+          <p className="mt-1 text-2xl font-bold text-primary lg:text-4xl">
+            {productionHour ? `${productionHour} → ${nextHour(productionHour)}` : "—"}
+          </p>
+        </div>
+      </header>
 
-        <Card className="mt-12 rounded-3xl border-border shadow-[var(--shadow-card)]">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-3xl lg:text-4xl">Rendement par ligne</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[56vh] min-h-[460px] pt-8 lg:h-[62vh]">
+      {rows.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center px-8 text-center">
+          <p className="text-4xl font-semibold text-muted-foreground lg:text-5xl">
+            Waiting for production records…
+          </p>
+        </div>
+      ) : (
+        <main className="flex flex-1 flex-col gap-8 px-8 py-8 lg:px-14">
+          <section className="h-[62vh] min-h-[420px] shrink-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={lineRows} margin={{ top: 56, right: 16, left: 8, bottom: 8 }}>
+              <BarChart data={rows} margin={{ top: 70, right: 16, left: 8, bottom: 8 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
                 <XAxis
                   dataKey="line"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 44, fontWeight: 800, fill: "var(--color-foreground)" }}
+                  tick={{ fontSize: 56, fontWeight: 800, fill: "var(--color-foreground)" }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  width={72}
-                  tick={{ fontSize: 22, fill: "var(--color-muted-foreground)" }}
+                  width={90}
+                  tick={{ fontSize: 26, fill: "var(--color-muted-foreground)" }}
                 />
-                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={150}>
-                  {lineRows.map((row) => (
-                    <Cell key={row.line} fill={colorOf(row.line)} />
+                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={190}>
+                  {rows.map((row, i) => (
+                    <Cell
+                      key={row.line}
+                      fill={rankColors[Math.min(i, rankColors.length - 1)]}
+                    />
                   ))}
                   <LabelList
                     dataKey="performance"
                     position="top"
-                    formatter={(v: number) => fmt(v)}
-                    style={{ fontSize: 48, fontWeight: 800, fill: "var(--color-foreground)" }}
+                    formatter={(v: number) => v.toFixed(2)}
+                    style={{ fontSize: 56, fontWeight: 800, fill: "var(--color-foreground)" }}
                   />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </section>
 
-        <Card className="mt-12 rounded-3xl border-border shadow-[var(--shadow-card)]">
-          <CardHeader>
-            <CardTitle className="text-2xl lg:text-3xl">Production en cours</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-lg font-semibold lg:text-2xl">Line</TableHead>
-                  <TableHead className="text-lg font-semibold lg:text-2xl">Farm</TableHead>
-                  <TableHead className="text-lg font-semibold lg:text-2xl">Versement</TableHead>
-                  <TableHead className="text-right text-lg font-semibold lg:text-2xl">
+          <section>
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
+                    Line
+                  </th>
+                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
+                    Farm
+                  </th>
+                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
+                    Versement
+                  </th>
+                  <th className="py-3 text-right text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
                     Rendement (kg/op.)
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {lineRows.map((row) => (
-                  <TableRow key={row.line}>
-                    <TableCell className="py-6 text-2xl font-bold text-foreground lg:text-4xl">
-                      {row.line}
-                    </TableCell>
-                    <TableCell className="text-xl text-foreground lg:text-3xl">{row.farm}</TableCell>
-                    <TableCell className="text-xl tabular-nums text-foreground lg:text-3xl">
-                      {row.batch}
-                    </TableCell>
-                    <TableCell className="text-right text-2xl font-bold tabular-nums text-foreground lg:text-4xl">
-                      {fmt(row.performance)}
-                    </TableCell>
-                  </TableRow>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.line} className="border-b border-border last:border-0">
+                    <td className="py-5 text-3xl font-bold lg:text-4xl">{row.line}</td>
+                    <td className="py-5 text-2xl lg:text-3xl">{row.farm}</td>
+                    <td className="py-5 text-2xl tabular-nums lg:text-3xl">{row.versement}</td>
+                    <td className="py-5 text-right text-3xl font-bold tabular-nums lg:text-4xl">
+                      {row.performance.toFixed(2)}
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </main>
+              </tbody>
+            </table>
+          </section>
+        </main>
+      )}
     </div>
   );
 }
-
