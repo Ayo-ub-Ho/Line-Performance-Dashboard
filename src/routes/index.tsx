@@ -147,13 +147,13 @@ function TvDashboard() {
                     Line
                   </th>
                   <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
+                    Client
+                  </th>
+                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
                     Farm
                   </th>
                   <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
                     Versement
-                  </th>
-                  <th className="py-3 text-right text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
-                    Rendement (kg/op.)
                   </th>
                 </tr>
               </thead>
@@ -161,11 +161,9 @@ function TvDashboard() {
                 {rows.map((row) => (
                   <tr key={row.line} className="border-b border-border last:border-0">
                     <td className="py-5 text-3xl font-bold lg:text-4xl">{row.line}</td>
+                    <td className="py-5 text-2xl lg:text-3xl">{row.client}</td>
                     <td className="py-5 text-2xl lg:text-3xl">{row.farm}</td>
                     <td className="py-5 text-2xl tabular-nums lg:text-3xl">{row.versement}</td>
-                    <td className="py-5 text-right text-3xl font-bold tabular-nums lg:text-4xl">
-                      {row.performance.toFixed(2)}
-                    </td>
                   </tr>
                 ))}
               </tbody>
