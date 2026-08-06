@@ -108,13 +108,13 @@ function TvDashboard() {
                   dataKey="line"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 56, fontWeight: 800, fill: "var(--color-foreground)" }}
+                  tick={{ fontSize: 56, fontWeight: 900, fill: "#f8fafc" }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
                   width={90}
-                  tick={{ fontSize: 26, fill: "var(--color-muted-foreground)" }}
+                  tick={{ fontSize: 26, fill: "#94a3b8" }}
                 />
                 <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={190}>
                   {rows.map((row, i) => (
@@ -127,7 +127,12 @@ function TvDashboard() {
                     dataKey="performance"
                     position="top"
                     formatter={(v: number) => v.toFixed(2)}
-                    style={{ fontSize: 56, fontWeight: 800, fill: "var(--color-foreground)" }}
+                    style={{
+                      fontSize: 56,
+                      fontWeight: 900,
+                      fill: "#f8fafc",
+                      textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+                    }}
                   />
                 </Bar>
               </BarChart>
