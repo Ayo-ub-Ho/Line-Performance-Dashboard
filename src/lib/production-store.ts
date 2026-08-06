@@ -15,10 +15,7 @@ export type ProductionRecord = {
   performance: number;
 };
 
-let records: ProductionRecord[] = [
-  { id: "rec-2", hour: "11:00 → 12:00", line: "L2", farm: "TADDART", versement: "V121", client: "LIDL", configId: "cfg-2", configName: "1000g × 6", boxes: 80, operators: 8, kgProduced: 480, performance: 60 },
-  { id: "rec-3", hour: "11:00 → 12:00", line: "L3", farm: "BIOUGRA", versement: "V122", client: "HF", configId: "cfg-3", configName: "Bulk 8kg", boxes: 50, operators: 5, kgProduced: 400, performance: 80 },
-];
+let records: ProductionRecord[] = [];
 const listeners = new Set<() => void>();
 
 function emit() {
