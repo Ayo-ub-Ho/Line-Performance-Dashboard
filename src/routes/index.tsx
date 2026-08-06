@@ -48,6 +48,31 @@ function useNow() {
   return now;
 }
 
+interface LineTickProps {
+  x?: number;
+  y?: number;
+  payload?: { value?: string };
+}
+
+function LineTick({ x = 0, y = 0, payload }: LineTickProps) {
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={24}
+      textAnchor="middle"
+      fill="#f8fafc"
+      style={{
+        fontSize: 48,
+        fontWeight: 900,
+        whiteSpace: "nowrap",
+        fontVariantNumeric: "tabular-nums",
+      }}
+    >
+      {payload?.value ?? ""}
+    </text>
+  );
+}
 
 function TvDashboard() {
   const records = useProductionRecords();
@@ -104,16 +129,16 @@ function TvDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={rows}
-                margin={{ top: 80, right: 16, left: 8, bottom: 16 }}
-                barCategoryGap={rows.length <= 2 ? "40%" : "25%"}
+                margin={{ top: 80, right: 24, left: 8, bottom: 80 }}
+                barCategoryGap={rows.length <= 2 ? "45%" : "30%"}
               >
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
                 <XAxis
                   dataKey="line"
                   axisLine={false}
                   tickLine={false}
-                  tickMargin={16}
-                  tick={{ fontSize: 56, fontWeight: 900, fill: "#f8fafc" }}
+                  interval={0}
+                  tick={<LineTick />}
                 />
                 <YAxis
                   axisLine={false}
@@ -121,7 +146,7 @@ function TvDashboard() {
                   width={90}
                   tick={{ fontSize: 26, fill: "#94a3b8" }}
                 />
-                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={150}>
+                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={120}>
                   {rows.map((row, i) => (
                     <Cell
                       key={row.line}
@@ -144,21 +169,26 @@ function TvDashboard() {
             </ResponsiveContainer>
           </section>
 
-          <section>
-            <table className="w-full border-collapse text-left">
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.line} className="border-b border-border last:border-0">
-                    <td className="py-8 text-4xl font-extrabold lg:text-5xl">{row.line}</td>
-                    <td className="py-8 text-3xl font-semibold lg:text-4xl">{row.client}</td>
-                    <td className="py-8 text-3xl font-semibold lg:text-4xl">{row.farm}</td>
-                    <td className="py-8 text-3xl font-semibold tabular-nums lg:text-4xl">
-                      {row.versement}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <section className="mt-auto">
+            {rows.map((row) => (
+              <div
+                key={row.line}
+                className="grid grid-cols-[80px_1fr_1fr_1fr] items-center gap-x-8 border-b border-border py-5 last:border-0 lg:grid-cols-[120px_1fr_1fr_1fr] lg:gap-x-12 lg:py-7"
+              >
+                <span className="whitespace-nowrap text-3xl font-extrabold lg:text-4xl">
+                  {row.line}
+                </span>
+                <span className="min-w-0 truncate text-2xl font-semibold lg:text-3xl">
+                  {row.client}
+                </span>
+                <span className="min-w-0 truncate text-2xl font-semibold lg:text-3xl">
+                  {row.farm}
+                </span>
+                <span className="min-w-0 truncate text-2xl font-semibold tabular-nums lg:text-3xl">
+                  {row.versement}
+                </span>
+              </div>
+            ))}
           </section>
         </main>
       )}
