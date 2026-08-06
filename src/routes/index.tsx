@@ -99,15 +99,20 @@ function TvDashboard() {
           </p>
         </div>
       ) : (
-        <main className="flex flex-1 flex-col gap-8 px-8 py-8 lg:px-14">
+        <main className="flex flex-1 flex-col gap-10 px-8 py-8 lg:px-14">
           <section className="h-[62vh] min-h-[420px] shrink-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={rows} margin={{ top: 70, right: 16, left: 8, bottom: 8 }}>
+              <BarChart
+                data={rows}
+                margin={{ top: 80, right: 16, left: 8, bottom: 16 }}
+                barCategoryGap={rows.length <= 2 ? "40%" : "25%"}
+              >
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
                 <XAxis
                   dataKey="line"
                   axisLine={false}
                   tickLine={false}
+                  tickMargin={16}
                   tick={{ fontSize: 56, fontWeight: 900, fill: "#f8fafc" }}
                 />
                 <YAxis
@@ -116,7 +121,7 @@ function TvDashboard() {
                   width={90}
                   tick={{ fontSize: 26, fill: "#94a3b8" }}
                 />
-                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={190}>
+                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={150}>
                   {rows.map((row, i) => (
                     <Cell
                       key={row.line}
@@ -141,29 +146,15 @@ function TvDashboard() {
 
           <section>
             <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
-                    Line
-                  </th>
-                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
-                    Client
-                  </th>
-                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
-                    Farm
-                  </th>
-                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
-                    Versement
-                  </th>
-                </tr>
-              </thead>
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.line} className="border-b border-border last:border-0">
-                    <td className="py-5 text-3xl font-bold lg:text-4xl">{row.line}</td>
-                    <td className="py-5 text-2xl lg:text-3xl">{row.client}</td>
-                    <td className="py-5 text-2xl lg:text-3xl">{row.farm}</td>
-                    <td className="py-5 text-2xl tabular-nums lg:text-3xl">{row.versement}</td>
+                    <td className="py-8 text-4xl font-extrabold lg:text-5xl">{row.line}</td>
+                    <td className="py-8 text-3xl font-semibold lg:text-4xl">{row.client}</td>
+                    <td className="py-8 text-3xl font-semibold lg:text-4xl">{row.farm}</td>
+                    <td className="py-8 text-3xl font-semibold tabular-nums lg:text-4xl">
+                      {row.versement}
+                    </td>
                   </tr>
                 ))}
               </tbody>
