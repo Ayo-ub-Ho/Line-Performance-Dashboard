@@ -108,13 +108,13 @@ function TvDashboard() {
                   dataKey="line"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 56, fontWeight: 800, fill: "var(--color-foreground)" }}
+                  tick={{ fontSize: 56, fontWeight: 900, fill: "#f8fafc" }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
                   width={90}
-                  tick={{ fontSize: 26, fill: "var(--color-muted-foreground)" }}
+                  tick={{ fontSize: 26, fill: "#94a3b8" }}
                 />
                 <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={190}>
                   {rows.map((row, i) => (
@@ -127,7 +127,12 @@ function TvDashboard() {
                     dataKey="performance"
                     position="top"
                     formatter={(v: number) => v.toFixed(2)}
-                    style={{ fontSize: 56, fontWeight: 800, fill: "var(--color-foreground)" }}
+                    style={{
+                      fontSize: 56,
+                      fontWeight: 900,
+                      fill: "#f8fafc",
+                      textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+                    }}
                   />
                 </Bar>
               </BarChart>
@@ -142,13 +147,13 @@ function TvDashboard() {
                     Line
                   </th>
                   <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
+                    Client
+                  </th>
+                  <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
                     Farm
                   </th>
                   <th className="py-3 text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
                     Versement
-                  </th>
-                  <th className="py-3 text-right text-xl font-semibold uppercase tracking-wide text-muted-foreground lg:text-2xl">
-                    Rendement (kg/op.)
                   </th>
                 </tr>
               </thead>
@@ -156,11 +161,9 @@ function TvDashboard() {
                 {rows.map((row) => (
                   <tr key={row.line} className="border-b border-border last:border-0">
                     <td className="py-5 text-3xl font-bold lg:text-4xl">{row.line}</td>
+                    <td className="py-5 text-2xl lg:text-3xl">{row.client}</td>
                     <td className="py-5 text-2xl lg:text-3xl">{row.farm}</td>
                     <td className="py-5 text-2xl tabular-nums lg:text-3xl">{row.versement}</td>
-                    <td className="py-5 text-right text-3xl font-bold tabular-nums lg:text-4xl">
-                      {row.performance.toFixed(2)}
-                    </td>
                   </tr>
                 ))}
               </tbody>
