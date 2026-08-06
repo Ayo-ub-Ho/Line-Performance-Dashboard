@@ -146,7 +146,7 @@ function TvDashboard() {
                   width={90}
                   tick={{ fontSize: 26, fill: "#94a3b8" }}
                 />
-                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={120}>
+                <Bar dataKey="performance" radius={[16, 16, 0, 0]} maxBarSize={100}>
                   {rows.map((row, i) => (
                     <Cell
                       key={row.line}
