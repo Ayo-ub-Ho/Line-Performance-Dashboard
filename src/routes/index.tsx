@@ -59,7 +59,7 @@ function LineTick({ x = 0, y = 0, payload }: LineTickProps) {
     <text
       x={x}
       y={y}
-      dy={24}
+      dy={52}
       textAnchor="middle"
       fill="#f8fafc"
       style={{
@@ -87,7 +87,7 @@ function TvDashboard() {
   const productionHour = rows[0]?.hour ?? records[0]?.hour ?? null;
 
   return (
-    <div className="dark flex min-h-screen flex-col bg-background text-foreground">
+    <div className="dark flex h-screen flex-col overflow-hidden bg-background text-foreground">
       <header className="flex flex-wrap items-center justify-between gap-6 border-b border-border px-8 py-6 lg:px-14">
         <div className="flex items-center gap-5">
           <span className="flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
@@ -124,12 +124,12 @@ function TvDashboard() {
           </p>
         </div>
       ) : (
-        <main className="flex flex-1 flex-col gap-10 px-8 py-8 lg:px-14">
-          <section className="h-[62vh] min-h-[420px] shrink-0">
+        <main className="flex min-h-0 flex-1 flex-col px-8 pb-6 pt-4 lg:px-14">
+          <section className="min-h-0 basis-[65%]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={rows}
-                margin={{ top: 80, right: 24, left: 8, bottom: 80 }}
+                margin={{ top: 90, right: 24, left: 8, bottom: 90 }}
                 barCategoryGap={rows.length <= 2 ? "45%" : "30%"}
               >
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
@@ -169,23 +169,23 @@ function TvDashboard() {
             </ResponsiveContainer>
           </section>
 
-          <section className="mt-auto">
+          <section className="flex min-h-0 basis-[35%] flex-col justify-center overflow-hidden">
             {rows.map((row) => (
               <div
                 key={row.line}
-                className="grid grid-cols-[80px_1fr_1fr_1fr] items-center gap-x-8 border-b border-border py-5 last:border-0 lg:grid-cols-[120px_1fr_1fr_1fr] lg:gap-x-12 lg:py-7"
+                className="grid min-h-0 flex-1 grid-cols-[80px_1fr_1fr_1fr] items-center gap-x-8 border-b border-border last:border-0 lg:grid-cols-[120px_1fr_1fr_1fr] lg:gap-x-12"
               >
-                <span className="whitespace-nowrap text-3xl font-extrabold lg:text-4xl">
+                <span className="whitespace-nowrap text-3xl font-extrabold leading-none lg:text-4xl">
                   {row.line}
                 </span>
-                <span className="min-w-0 truncate text-2xl font-semibold lg:text-3xl">
-                  {row.client}
-                </span>
-                <span className="min-w-0 truncate text-2xl font-semibold lg:text-3xl">
+                <span className="min-w-0 truncate text-2xl font-semibold leading-none lg:text-3xl">
                   {row.farm}
                 </span>
-                <span className="min-w-0 truncate text-2xl font-semibold tabular-nums lg:text-3xl">
+                <span className="min-w-0 truncate text-2xl font-semibold tabular-nums leading-none lg:text-3xl">
                   {row.versement}
+                </span>
+                <span className="min-w-0 truncate text-2xl font-semibold leading-none lg:text-3xl">
+                  {row.client}
                 </span>
               </div>
             ))}
