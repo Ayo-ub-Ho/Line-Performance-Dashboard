@@ -14,7 +14,205 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      farms: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      packaging_configurations: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          kg_per_box: number | null
+          mode: string
+          name: string
+          unit_weight: number | null
+          units_per_box: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          kg_per_box?: number | null
+          mode?: string
+          name?: string
+          unit_weight?: number | null
+          units_per_box?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          kg_per_box?: number | null
+          mode?: string
+          name?: string
+          unit_weight?: number | null
+          units_per_box?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packaging_configurations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packing_lines: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      production_records: {
+        Row: {
+          boxes: number
+          client_id: string | null
+          client_name: string
+          configuration_id: string | null
+          configuration_name: string
+          created_at: string
+          farm_id: string | null
+          farm_name: string
+          hour: string
+          id: string
+          kg_per_box_snapshot: number
+          kg_produced: number
+          line_id: string | null
+          line_name: string
+          operators: number
+          performance: number
+          updated_at: string
+          versement: string
+        }
+        Insert: {
+          boxes: number
+          client_id?: string | null
+          client_name: string
+          configuration_id?: string | null
+          configuration_name?: string
+          created_at?: string
+          farm_id?: string | null
+          farm_name: string
+          hour: string
+          id?: string
+          kg_per_box_snapshot: number
+          kg_produced: number
+          line_id?: string | null
+          line_name: string
+          operators: number
+          performance: number
+          updated_at?: string
+          versement?: string
+        }
+        Update: {
+          boxes?: number
+          client_id?: string | null
+          client_name?: string
+          configuration_id?: string | null
+          configuration_name?: string
+          created_at?: string
+          farm_id?: string | null
+          farm_name?: string
+          hour?: string
+          id?: string
+          kg_per_box_snapshot?: number
+          kg_produced?: number
+          line_id?: string | null
+          line_name?: string
+          operators?: number
+          performance?: number
+          updated_at?: string
+          versement?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_records_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_records_configuration_id_fkey"
+            columns: ["configuration_id"]
+            isOneToOne: false
+            referencedRelation: "packaging_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_records_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_records_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "packing_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

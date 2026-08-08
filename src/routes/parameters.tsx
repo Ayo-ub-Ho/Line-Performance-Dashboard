@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import { AppNav } from "@/components/AppNav";
@@ -16,18 +16,22 @@ import {
 } from "@/components/ui/select";
 import {
   buildConfigName,
-  clients as initialClients,
   computeKgPerBox,
-  farms,
   formatKg,
-  packagingConfigs,
   packagingModes,
-  packingLines,
   validateConfig,
   type PackagingConfig,
   type PackagingModeId,
 } from "@/lib/mock-data";
-
+import {
+  useNameRows,
+  useNameRowMutations,
+  usePackagingConfigMutations,
+  usePackagingConfigs,
+  type ConfigRow,
+  type NameRow,
+  type NameTable,
+} from "@/lib/supabase-data";
 
 export const Route = createFileRoute("/parameters")({
   head: () => ({
@@ -48,28 +52,38 @@ export const Route = createFileRoute("/parameters")({
   component: Parameters,
 });
 
+function NameCell({
+  row,
+  onCommit,
+}: {
+  row: NameRow;
+  onCommit: (name: string) => void;
+}) {
+  const [value, setValue] = useState(row.name);
+  useEffect(() => setValue(row.name), [row.name]);
+  return (
+    <Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => {
+        if (value.trim() && value !== row.name) onCommit(value.trim());
+      }}
+      className="h-11 rounded-xl"
+    />
+  );
+}
+
 function ListTable({
   title,
-  columns,
-  rows,
-  value,
-  onChange,
+  column,
+  table,
 }: {
   title: string;
-  columns: string[];
-  rows: string[][];
-  value?: string[][];
-  onChange?: (next: string[][]) => void;
+  column: string;
+  table: NameTable;
 }) {
-  const [internal, setInternal] = useState(rows);
-  const data = value ?? internal;
-  const setData = (updater: (d: string[][]) => string[][]) => {
-    if (onChange) onChange(updater(data));
-    else setInternal(updater);
-  };
-
-  const update = (r: number, c: number, v: string) =>
-    setData((d) => d.map((row, i) => (i === r ? row.map((cell, j) => (j === c ? v : cell)) : row)));
+  const { data: rows = [] } = useNameRows(table);
+  const { add, rename, remove } = useNameRowMutations(table);
 
   return (
     <Card className="rounded-3xl border-border shadow-[var(--shadow-card)]">
@@ -79,7 +93,7 @@ function ListTable({
           variant="outline"
           size="sm"
           className="rounded-full"
-          onClick={() => setData((d) => [...d, columns.map(() => "")])}
+          onClick={() => add.mutate(`New ${column}`)}
         >
           <Plus className="size-4" /> Add
         </Button>
@@ -87,32 +101,23 @@ function ListTable({
       <CardContent className="space-y-3">
         <div
           className="grid gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-          style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr)) 44px` }}
+          style={{ gridTemplateColumns: "minmax(0,1fr) 44px" }}
         >
-          {columns.map((c) => (
-            <span key={c}>{c}</span>
-          ))}
+          <span>{column}</span>
           <span />
         </div>
-        {data.map((row, r) => (
+        {rows.map((row) => (
           <div
-            key={r}
+            key={row.id}
             className="grid items-center gap-3"
-            style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr)) 44px` }}
+            style={{ gridTemplateColumns: "minmax(0,1fr) 44px" }}
           >
-            {row.map((cell, c) => (
-              <Input
-                key={c}
-                value={cell}
-                onChange={(e) => update(r, c, e.target.value)}
-                className="h-11 rounded-xl"
-              />
-            ))}
+            <NameCell row={row} onCommit={(name) => rename.mutate({ id: row.id, name })} />
             <Button
               variant="ghost"
               size="icon"
               className="rounded-xl text-muted-foreground hover:text-destructive"
-              onClick={() => setData((d) => d.filter((_, i) => i !== r))}
+              onClick={() => remove.mutate(row.id)}
               aria-label="Remove row"
             >
               <Trash2 className="size-4" />
@@ -123,7 +128,6 @@ function ListTable({
     </Card>
   );
 }
-
 
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
 const intOrNull = (v: string) => {
@@ -138,21 +142,36 @@ function ConfigCard({
   onChange,
   onRemove,
 }: {
-  config: PackagingConfig;
-  clientOptions: string[];
-  onChange: (next: PackagingConfig) => void;
+  config: ConfigRow;
+  clientOptions: NameRow[];
+  onChange: (next: ConfigRow) => void;
   onRemove: () => void;
 }) {
-  const mode = packagingModes.find((m) => m.id === config.mode);
+  const [draft, setDraft] = useState<ConfigRow>(config);
+  useEffect(() => setDraft(config), [config]);
+
+  const mode = packagingModes.find((m) => m.id === draft.mode);
   const showUnitWeight = mode?.fields.includes("unitWeight") ?? false;
   const showUnitsPerBox = mode?.fields.includes("unitsPerBox") ?? false;
   const derived = mode?.derivedKgPerBox ?? false;
-  const kgPerBox = computeKgPerBox(config);
-  const errors = validateConfig(config);
+  const kgPerBox = computeKgPerBox(draft);
+  const errors = validateConfig(draft);
 
-  const set = (patch: Partial<PackagingConfig>) =>
-    onChange({ ...config, ...patch, name: buildConfigName({ ...config, ...patch }) });
-
+  const withName = (patch: Partial<PackagingConfig> & Partial<ConfigRow>): ConfigRow => {
+    const next = { ...draft, ...patch } as ConfigRow;
+    return { ...next, name: buildConfigName(next) };
+  };
+  /** Local edit, persisted on blur. */
+  const edit = (patch: Partial<PackagingConfig>) => setDraft(withName(patch));
+  /** Immediate persist (dropdowns). */
+  const commit = (patch: Partial<ConfigRow>) => {
+    const next = withName(patch);
+    setDraft(next);
+    onChange(next);
+  };
+  const flush = () => {
+    if (JSON.stringify(draft) !== JSON.stringify(config)) onChange(draft);
+  };
 
   return (
     <div className="rounded-2xl border border-border p-5">
@@ -161,14 +180,22 @@ function ConfigCard({
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Client
           </Label>
-          <Select value={config.client} onValueChange={(v) => set({ client: v })}>
+          <Select
+            value={draft.clientId}
+            onValueChange={(v) =>
+              commit({
+                clientId: v,
+                client: clientOptions.find((c) => c.id === v)?.name ?? "",
+              })
+            }
+          >
             <SelectTrigger className="h-11 rounded-xl">
               <SelectValue placeholder="Select client" />
             </SelectTrigger>
             <SelectContent>
               {clientOptions.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -182,12 +209,11 @@ function ConfigCard({
           <Input
             readOnly
             disabled
-            value={buildConfigName(config)}
+            value={buildConfigName(draft)}
             className="h-11 cursor-not-allowed rounded-xl bg-muted font-semibold"
             placeholder="Generated automatically"
           />
         </div>
-
 
         <div className="flex items-end justify-end">
           <Button
@@ -208,8 +234,8 @@ function ConfigCard({
             Packaging Mode
           </Label>
           <Select
-            value={config.mode}
-            onValueChange={(v) => set({ mode: v as PackagingModeId })}
+            value={draft.mode}
+            onValueChange={(v) => commit({ mode: v as PackagingModeId })}
           >
             <SelectTrigger className="h-11 rounded-xl">
               <SelectValue placeholder="Select mode" />
@@ -234,8 +260,9 @@ function ConfigCard({
               min={1}
               step={1}
               inputMode="numeric"
-              value={str(config.unitWeight)}
-              onChange={(e) => set({ unitWeight: intOrNull(e.target.value) })}
+              value={str(draft.unitWeight)}
+              onChange={(e) => edit({ unitWeight: intOrNull(e.target.value) })}
+              onBlur={flush}
               className="h-11 rounded-xl tabular-nums"
               aria-invalid={!!errors.unitWeight}
               placeholder="500"
@@ -256,8 +283,9 @@ function ConfigCard({
               min={1}
               step={1}
               inputMode="numeric"
-              value={str(config.unitsPerBox)}
-              onChange={(e) => set({ unitsPerBox: intOrNull(e.target.value) })}
+              value={str(draft.unitsPerBox)}
+              onChange={(e) => edit({ unitsPerBox: intOrNull(e.target.value) })}
+              onBlur={flush}
               className="h-11 rounded-xl tabular-nums"
               aria-invalid={!!errors.unitsPerBox}
               placeholder="12"
@@ -279,8 +307,9 @@ function ConfigCard({
             inputMode="decimal"
             readOnly={derived}
             disabled={derived}
-            value={derived ? formatKg(kgPerBox) : str(config.kgPerBox)}
-            onChange={(e) => set({ kgPerBox: numOrNull(e.target.value) })}
+            value={derived ? formatKg(kgPerBox) : str(draft.kgPerBox)}
+            onChange={(e) => edit({ kgPerBox: numOrNull(e.target.value) })}
+            onBlur={flush}
             className={
               derived
                 ? "h-11 cursor-not-allowed rounded-xl bg-muted font-semibold tabular-nums"
@@ -302,28 +331,10 @@ function ConfigCard({
   );
 }
 
-
 function Parameters() {
-  const [configs, setConfigs] = useState<PackagingConfig[]>(packagingConfigs);
-  const [clientRows, setClientRows] = useState<string[][]>(initialClients.map((c) => [c]));
-  const clientOptions = clientRows
-    .map((r) => (r[0] ?? "").trim())
-    .filter((c) => c.length > 0);
-
-  const addConfig = () =>
-    setConfigs((c) => [
-      ...c,
-      {
-        id: `cfg-${Date.now()}`,
-        client: clientOptions[0] ?? "",
-        name: "",
-        mode: "sachet",
-        unitWeight: null,
-        unitsPerBox: null,
-        kgPerBox: null,
-      },
-    ]);
-
+  const { data: clientRows = [] } = useNameRows("clients");
+  const { data: configs = [] } = usePackagingConfigs();
+  const { add, save, remove } = usePackagingConfigMutations();
 
   return (
     <div className="min-h-screen bg-background">
@@ -337,7 +348,13 @@ function Parameters() {
         <Card className="mt-8 rounded-3xl border-border shadow-[var(--shadow-card)]">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="text-xl">Packaging Configurations</CardTitle>
-            <Button variant="outline" size="sm" className="rounded-full" onClick={addConfig}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              disabled={clientRows.length === 0}
+              onClick={() => clientRows[0] && add.mutate(clientRows[0].id)}
+            >
               <Plus className="size-4" /> Add configuration
             </Button>
           </CardHeader>
@@ -346,31 +363,18 @@ function Parameters() {
               <ConfigCard
                 key={cfg.id}
                 config={cfg}
-                clientOptions={clientOptions}
-                onChange={(next) =>
-                  setConfigs((all) => all.map((c) => (c.id === cfg.id ? next : c)))
-                }
-                onRemove={() => setConfigs((all) => all.filter((c) => c.id !== cfg.id))}
+                clientOptions={clientRows}
+                onChange={(next) => save.mutate(next)}
+                onRemove={() => remove.mutate(cfg.id)}
               />
             ))}
           </CardContent>
         </Card>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-3">
-          <ListTable
-            title="Clients"
-            columns={["Client"]}
-            rows={clientRows}
-            value={clientRows}
-            onChange={setClientRows}
-          />
-
-          <ListTable
-            title="Packing Lines"
-            columns={["Line"]}
-            rows={packingLines.map((l) => [l])}
-          />
-          <ListTable title="Farms" columns={["Farm"]} rows={farms.map((f) => [f])} />
+          <ListTable title="Clients" column="Client" table="clients" />
+          <ListTable title="Packing Lines" column="Line" table="packing_lines" />
+          <ListTable title="Farms" column="Farm" table="farms" />
         </div>
       </main>
     </div>

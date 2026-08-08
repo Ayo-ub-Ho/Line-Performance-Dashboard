@@ -4,7 +4,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { deleteRecord, useProductionRecords } from "@/lib/production-store";
+import { useProductionMutations, useProductionRecords } from "@/lib/production-store";
 
 export const Route = createFileRoute("/production-records")({
   head: () => ({
@@ -60,6 +60,7 @@ const headers = [
 
 function ProductionRecords() {
   const records = useProductionRecords();
+  const { deleteRecord } = useProductionMutations();
   const navigate = useNavigate();
 
   const totalKg = records.reduce((s, r) => s + r.kgProduced, 0);
@@ -168,7 +169,7 @@ function ProductionRecords() {
                               variant="outline"
                               size="sm"
                               className="rounded-lg text-destructive hover:text-destructive"
-                              onClick={() => deleteRecord(r.id)}
+                              onClick={() => deleteRecord.mutate(r.id)}
                             >
                               <Trash2 className="size-4" />
                               Delete
