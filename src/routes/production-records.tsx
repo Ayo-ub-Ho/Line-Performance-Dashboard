@@ -60,6 +60,7 @@ const headers = [
 
 function ProductionRecords() {
   const records = useProductionRecords();
+  const { deleteRecord } = useProductionMutations();
   const navigate = useNavigate();
 
   const totalKg = records.reduce((s, r) => s + r.kgProduced, 0);
