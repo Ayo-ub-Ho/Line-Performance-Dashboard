@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
@@ -16,19 +16,15 @@ import {
 } from "@/components/ui/select";
 import {
   buildConfigName,
-  clients,
   computeKgPerBox,
-  farms,
   hours,
-  packagingConfigs,
   packagingModes,
-  packingLines,
 } from "@/lib/mock-data";
 import {
-  addRecord,
-  getRecord,
-  updateRecord,
+  useProductionMutations,
+  useProductionRecord,
 } from "@/lib/production-store";
+import { useNameRows, usePackagingConfigs } from "@/lib/supabase-data";
 
 export const Route = createFileRoute("/hourly-entry")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -54,9 +50,6 @@ export const Route = createFileRoute("/hourly-entry")({
   component: HourlyEntry,
 });
 
-
-
-
 function Field({
   label,
   error,
@@ -80,25 +73,46 @@ function Field({
 function HourlyEntry() {
   const { edit } = Route.useSearch();
   const navigate = useNavigate();
-  const editing = edit ? getRecord(edit) : undefined;
 
-  const [hour, setHour] = useState(editing?.hour ?? "");
-  const [line, setLine] = useState(editing?.line ?? "");
-  const [farm, setFarm] = useState(editing?.farm ?? "");
-  const [versement, setVersement] = useState(editing?.versement ?? "");
-  const [client, setClient] = useState(editing?.client ?? "");
-  const [configId, setConfigId] = useState(editing?.configId ?? "");
-  const [boxes, setBoxes] = useState(editing ? String(editing.boxes) : "");
-  const [operators, setOperators] = useState(
-    editing ? String(editing.operators) : "",
-  );
+  const { data: editing } = useProductionRecord(edit);
+  const { data: clientRows = [] } = useNameRows("clients");
+  const { data: lineRows = [] } = useNameRows("packing_lines");
+  const { data: farmRows = [] } = useNameRows("farms");
+  const { data: configs = [] } = usePackagingConfigs();
+  const { addRecord, updateRecord } = useProductionMutations();
+
+  const clients = clientRows.map((c) => c.name);
+  const packingLines = lineRows.map((l) => l.name);
+  const farms = farmRows.map((f) => f.name);
+
+  const [hour, setHour] = useState("");
+  const [line, setLine] = useState("");
+  const [farm, setFarm] = useState("");
+  const [versement, setVersement] = useState("");
+  const [client, setClient] = useState("");
+  const [configId, setConfigId] = useState("");
+  const [boxes, setBoxes] = useState("");
+  const [operators, setOperators] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  // Pre-fill the form once the edited record has loaded.
+  useEffect(() => {
+    if (!editing) return;
+    setHour(editing.hour);
+    setLine(editing.line);
+    setFarm(editing.farm);
+    setVersement(editing.versement);
+    setClient(editing.client);
+    setConfigId(editing.configId ?? "");
+    setBoxes(String(editing.boxes));
+    setOperators(String(editing.operators));
+  }, [editing]);
+
   const clientConfigs = useMemo(
-    () => packagingConfigs.filter((c) => c.client === client),
-    [client],
+    () => configs.filter((c) => c.client === client),
+    [configs, client],
   );
-  const config = packagingConfigs.find((c) => c.id === configId) ?? null;
+  const config = configs.find((c) => c.id === configId) ?? null;
   const mode = packagingModes.find((m) => m.id === config?.mode) ?? null;
   const kgPerBox = config ? computeKgPerBox(config) : null;
 
@@ -132,30 +146,44 @@ function HourlyEntry() {
     setSubmitted(false);
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    if (Object.keys(errors).length > 0 || kgProduced == null || performance == null)
+    if (
+      Object.keys(errors).length > 0 ||
+      kgProduced == null ||
+      performance == null ||
+      kgPerBox == null
+    )
       return;
     const payload = {
       hour,
       line,
+      lineId: lineRows.find((l) => l.name === line)?.id ?? null,
       farm,
+      farmId: farmRows.find((f) => f.name === farm)?.id ?? null,
       versement: versement.trim(),
       client,
+      clientId: clientRows.find((c) => c.name === client)?.id ?? null,
       configId,
       configName: config ? buildConfigName(config) : "",
+      kgPerBoxSnapshot: kgPerBox,
       boxes: boxesNum,
       operators: operatorsNum,
       kgProduced,
       performance,
     };
-    if (editing) {
-      updateRecord(editing.id, payload);
-      toast.success("Production updated successfully", { duration: 2000 });
-    } else {
-      addRecord(payload);
-      toast.success("Production saved successfully", { duration: 2000 });
+    try {
+      if (editing) {
+        await updateRecord.mutateAsync({ id: editing.id, input: payload });
+        toast.success("Production updated successfully", { duration: 2000 });
+      } else {
+        await addRecord.mutateAsync(payload);
+        toast.success("Production saved successfully", { duration: 2000 });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save production");
+      return;
     }
     reset();
     navigate({ to: "/production-records" });
