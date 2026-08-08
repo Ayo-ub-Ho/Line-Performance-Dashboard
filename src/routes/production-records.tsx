@@ -4,7 +4,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { deleteRecord, useProductionRecords } from "@/lib/production-store";
+import { useProductionMutations, useProductionRecords } from "@/lib/production-store";
 
 export const Route = createFileRoute("/production-records")({
   head: () => ({
