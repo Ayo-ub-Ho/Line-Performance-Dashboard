@@ -82,7 +82,7 @@ function ProductionRecords() {
             </p>
           </div>
           <Button asChild size="lg" className="rounded-xl">
-            <Link to="/hourly-entry" search={{}}>Go to Hourly Entry</Link>
+            <Link to="/hourly-entry" search={{ edit: undefined }}>Go to Hourly Entry</Link>
           </Button>
         </div>
 
@@ -107,7 +107,7 @@ function ProductionRecords() {
                   No production has been saved yet.
                 </p>
                 <Button asChild className="rounded-xl">
-                  <Link to="/hourly-entry" search={{}}>Go to Hourly Entry</Link>
+                  <Link to="/hourly-entry" search={{ edit: undefined }}>Go to Hourly Entry</Link>
                 </Button>
               </div>
             ) : (
