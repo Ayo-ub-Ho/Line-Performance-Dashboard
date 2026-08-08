@@ -169,7 +169,7 @@ function ProductionRecords() {
                               variant="outline"
                               size="sm"
                               className="rounded-lg text-destructive hover:text-destructive"
-                              onClick={() => deleteRecord(r.id)}
+                              onClick={() => deleteRecord.mutate(r.id)}
                             >
                               <Trash2 className="size-4" />
                               Delete
