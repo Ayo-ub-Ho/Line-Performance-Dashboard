@@ -101,22 +101,28 @@ export function usePackagingConfigs() {
   });
 }
 
+export type ConfigInput = Omit<ConfigRow, "id">;
+
 export function usePackagingConfigMutations() {
   const qc = useQueryClient();
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["packaging_configurations"] });
 
   const add = useMutation({
-    mutationFn: async (clientId: string) => {
+    mutationFn: async (config: ConfigInput) => {
       const { error } = await supabase.from("packaging_configurations").insert({
-        client_id: clientId,
-        name: "",
-        mode: "sachet",
+        client_id: config.clientId,
+        name: config.name,
+        mode: config.mode,
+        unit_weight: config.unitWeight,
+        units_per_box: config.unitsPerBox,
+        kg_per_box: config.kgPerBox,
       });
       if (error) throw error;
     },
     onSuccess: invalidate,
   });
+
 
   const save = useMutation({
     mutationFn: async (config: ConfigRow) => {
